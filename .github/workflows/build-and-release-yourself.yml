@@ -47,14 +47,16 @@ jobs:
         # Removing the Watch bundle before injection avoids runtime/signing issues
         # on sideloaded environments like LiveContainer.
         run: |
+          mv spotify.ipa spotify.original.ipa
           rm -rf _prep_ipa
           mkdir -p _prep_ipa
-          unzip -q spotify.ipa -d _prep_ipa
+          unzip -q spotify.original.ipa -d _prep_ipa
           rm -rf _prep_ipa/Payload/Spotify.app/Watch
           cd _prep_ipa
           zip -qry ../spotify.ipa Payload
           cd ..
           rm -rf _prep_ipa
+          rm -f spotify.original.ipa
 
       - name: Download and Validate Tweak
         run: |
