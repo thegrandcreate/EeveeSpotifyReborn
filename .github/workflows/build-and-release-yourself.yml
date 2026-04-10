@@ -42,6 +42,20 @@ jobs:
             exit 1
           fi
 
+      - name: Remove Watch Payload (Encrypted)
+        # Decrypted Spotify packages commonly include encrypted watchOS binaries.
+        # Removing the Watch bundle before injection avoids runtime/signing issues
+        # on sideloaded environments like LiveContainer.
+        run: |
+          rm -rf _prep_ipa
+          mkdir -p _prep_ipa
+          unzip -q spotify.ipa -d _prep_ipa
+          rm -rf _prep_ipa/Payload/Spotify.app/Watch
+          cd _prep_ipa
+          zip -qry ../spotify.ipa Payload
+          cd ..
+          rm -rf _prep_ipa
+
       - name: Download and Validate Tweak
         run: |
           wget "${{ inputs.tweak_url }}" --no-verbose -O ${{ github.workspace }}/eeveespotify.deb
