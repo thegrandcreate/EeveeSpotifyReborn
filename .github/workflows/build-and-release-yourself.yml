@@ -91,6 +91,18 @@ jobs:
             -i eeveespotify.deb "$SWIFTPROTOBUF_ROOTFUL" "$OPENSPOTIFYSAFARIEXTENSION" \
             -s - -d --level Optimal
 
+      - name: Verify No CydiaSubstrate in IPA
+        run: |
+          unzip -o EeveeSpotify.ipa -d _verify_ipa > /dev/null
+          if find _verify_ipa -name "CydiaSubstrate*" -o -name "libsubstrate*" | grep -q .; then
+            echo "::error::CydiaSubstrate was bundled — rebuild the .deb with ObjcRuntime backend (EeveeSpotify_ORION_BACKEND = ObjcRuntime in Makefile)."
+            find _verify_ipa -name "CydiaSubstrate*" -o -name "libsubstrate*"
+            exit 1
+          else
+            echo "✓ No CydiaSubstrate found — IPA is LiveContainer-compatible."
+          fi
+          rm -rf _verify_ipa
+
       - name: Create Patched Package
         run: ipapatch -input EeveeSpotify.ipa -output EeveeSpotify-patched.ipa
    
