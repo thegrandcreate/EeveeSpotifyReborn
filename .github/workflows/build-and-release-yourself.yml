@@ -97,9 +97,7 @@ jobs:
         # (LC_LOAD_WEAK_DYLIB), and the Internal backend never calls Substrate.
         run: |
           zip -d EeveeSpotify.ipa \
-            "Payload/Spotify.app/Frameworks/CydiaSubstrate.framework/CydiaSubstrate" \
-            "Payload/Spotify.app/Frameworks/CydiaSubstrate.framework/Info.plist" \
-            "Payload/Spotify.app/Frameworks/CydiaSubstrate.framework/" 2>/dev/null || true
+            "Payload/Spotify.app/Frameworks/CydiaSubstrate.framework*" 2>/dev/null || true
           echo "Strip complete. Remaining Frameworks:"
           unzip -l EeveeSpotify.ipa | grep "Frameworks/" | awk '{print $NF}' | sort -u
 
