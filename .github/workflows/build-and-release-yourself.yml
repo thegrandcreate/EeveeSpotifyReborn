@@ -91,15 +91,27 @@ jobs:
             -i eeveespotify.deb "$SWIFTPROTOBUF_ROOTFUL" "$OPENSPOTIFYSAFARIEXTENSION" \
             -s - -d --level Optimal
 
+      - name: Strip CydiaSubstrate from IPA
+        # ivinject hard-codes Orion→Substrate bundling in its source.
+        # Safe to remove because Orion.framework's Substrate dependency is WEAK
+        # (LC_LOAD_WEAK_DYLIB), and the Internal backend never calls Substrate.
+        run: |
+          zip -d EeveeSpotify.ipa \
+            "Payload/Spotify.app/Frameworks/CydiaSubstrate.framework/CydiaSubstrate" \
+            "Payload/Spotify.app/Frameworks/CydiaSubstrate.framework/Info.plist" \
+            "Payload/Spotify.app/Frameworks/CydiaSubstrate.framework/" 2>/dev/null || true
+          echo "Strip complete. Remaining Frameworks:"
+          unzip -l EeveeSpotify.ipa | grep "Frameworks/" | awk '{print $NF}' | sort -u
+
       - name: Verify No CydiaSubstrate in IPA
         run: |
           unzip -o EeveeSpotify.ipa -d _verify_ipa > /dev/null
           if find _verify_ipa -name "CydiaSubstrate*" -o -name "libsubstrate*" | grep -q .; then
-            echo "::error::CydiaSubstrate was bundled — rebuild the .deb with ObjcRuntime backend (EeveeSpotify_ORION_BACKEND = ObjcRuntime in Makefile)."
+            echo "::error::CydiaSubstrate still present after strip step."
             find _verify_ipa -name "CydiaSubstrate*" -o -name "libsubstrate*"
             exit 1
           else
-            echo "✓ No CydiaSubstrate found — IPA is LiveContainer-compatible."
+            echo "✓ No CydiaSubstrate — IPA is LiveContainer-compatible."
           fi
           rm -rf _verify_ipa
 
